@@ -3,7 +3,7 @@ import logging
 import aiohttp
 
 from data_gatherers.parsers.abstract import AbstractParser
-from models import AllPrices
+from models import PlatformPrices
 
 
 class PriceFetcher:
@@ -14,7 +14,7 @@ class PriceFetcher:
         self.url = url
         self.parser = parser
 
-    async def fetch_prices(self) -> AllPrices:
+    async def fetch_prices(self) -> PlatformPrices:
         """Fetch data from endpoint and return parsed data."""
         async with aiohttp.ClientSession() as session:
             data = None

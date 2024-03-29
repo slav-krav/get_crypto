@@ -6,7 +6,7 @@ from data_gatherers.fetcher import PriceFetcher
 from data_gatherers.parsers.abstract import AbstractParser
 from data_gatherers.parsers.binance import BinanceParser
 from data_gatherers.parsers.bybit import BybitParser
-from models import AllPrices
+from models import PlatformPrices
 
 
 @pytest.mark.parametrize('parser_type, url', [
@@ -18,5 +18,5 @@ async def test_bybit_fetch(parser_type: Type[AbstractParser], url: str):
     parser = parser_type()
     fetcher = PriceFetcher(url=url, parser=parser)
     all_prices = await fetcher.fetch_prices()
-    assert isinstance(all_prices, AllPrices)  # pydantic did validation
+    assert isinstance(all_prices, PlatformPrices)  # pydantic did validation
     assert all_prices.prices  # not empty
