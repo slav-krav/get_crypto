@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Sequence
+from typing import Iterable
 
 from data_gatherers.fetcher import PriceFetcher
 from models import AggregatedPrices, PlatformPrices
@@ -8,12 +8,12 @@ from models import AggregatedPrices, PlatformPrices
 __all__ = ['get_all_prices', 'get_one_price']
 
 
-async def get_all_prices(fetchers: Sequence[PriceFetcher]) -> list[AggregatedPrices]:
+async def get_all_prices(fetchers: Iterable[PriceFetcher]) -> list[AggregatedPrices]:
     all_platforms = await _fetch_platform_prices(fetchers)
     return _group_by_symbol(all_platforms)
 
 
-def _group_by_symbol(platform_prices_seq: Sequence[PlatformPrices]) -> list[AggregatedPrices]:
+def _group_by_symbol(platform_prices_seq: Iterable[PlatformPrices]) -> list[AggregatedPrices]:
     result = []
 
     all_symbols = _get_unique_symbols(platform_prices_seq)
@@ -29,14 +29,14 @@ def _group_by_symbol(platform_prices_seq: Sequence[PlatformPrices]) -> list[Aggr
     return result
 
 
-def _get_unique_symbols(platform_prices_seq: Sequence[PlatformPrices]) -> set[str]:
+def _get_unique_symbols(platform_prices_seq: Iterable[PlatformPrices]) -> set[str]:
     unique_symbols = set()
     for platform_prices in platform_prices_seq:
         unique_symbols.update(platform_prices.prices)
     return unique_symbols
 
 
-async def _fetch_platform_prices(fetchers: list[PriceFetcher]) -> tuple[PlatformPrices, ...]:
+async def _fetch_platform_prices(fetchers: Iterable[PriceFetcher]) -> tuple[PlatformPrices, ...]:
     all_platforms: tuple[PlatformPrices or Exception, ...] = await asyncio.gather(
         *[fetcher.fetch_prices() for fetcher in fetchers],
         return_exceptions=True
@@ -47,7 +47,7 @@ async def _fetch_platform_prices(fetchers: list[PriceFetcher]) -> tuple[Platform
     return all_platforms
 
 
-async def get_one_price(fetchers: Sequence[PriceFetcher], symbol: str) -> AggregatedPrices:
+async def get_one_price(fetchers: Iterable[PriceFetcher], symbol: str) -> AggregatedPrices:
     """Gets AggregatedPrices for a single symbol.
 
     Note:
