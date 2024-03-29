@@ -1,13 +1,12 @@
-import abc
 import logging
 
 import aiohttp
 
 from data_gatherers.parsers.abstract import AbstractParser
-from models import AllPrices, Price
+from models import AllPrices
 
 
-class DataGatherer(abc.ABC):
+class PriceFetcher:
     MAX_RETRIES: int = 3
 
     def __init__(self, url: str, parser: AbstractParser) -> None:
