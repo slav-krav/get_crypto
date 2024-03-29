@@ -3,7 +3,7 @@ import logging
 import pydantic
 
 from data_gatherers.parsers.abstract import AbstractParser
-from models import PlatformPrices, Price, Platform
+from models import PlatformPrices, Price
 
 
 class BinanceParser(AbstractParser):

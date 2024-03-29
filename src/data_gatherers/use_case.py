@@ -1,9 +1,9 @@
 import asyncio
 import logging
-from typing import Iterable
+from typing import Iterable, Optional
 
 from data_gatherers.fetcher import PriceFetcher
-from models import AggregatedPrices, PlatformPrices
+from models import AggregatedPrices, PlatformPrices, Symbol, Platform
 
 __all__ = ['get_all_prices', 'get_one_price']
 
@@ -18,13 +18,7 @@ def _group_by_symbol(platform_prices_seq: Iterable[PlatformPrices]) -> list[Aggr
 
     all_symbols = _get_unique_symbols(platform_prices_seq)
     for symbol in all_symbols:
-        prices = {}
-        for platform_prices in platform_prices_seq:
-            try:
-                price = platform_prices.prices[symbol].float_value
-            except KeyError:
-                price = None
-            prices[platform_prices.platform] = price
+        prices = _get_price_per_symbol(symbol, platform_prices_seq)
         result.append(AggregatedPrices(name=symbol, prices=prices))
     return result
 
@@ -34,6 +28,18 @@ def _get_unique_symbols(platform_prices_seq: Iterable[PlatformPrices]) -> set[st
     for platform_prices in platform_prices_seq:
         unique_symbols.update(platform_prices.prices)
     return unique_symbols
+
+
+def _get_price_per_symbol(symbol: Symbol, platform_prices_seq: Iterable[PlatformPrices]) -> dict[
+    Platform, Optional[str]]:
+    prices = {}
+    for platform_prices in platform_prices_seq:
+        try:
+            price = platform_prices.prices[symbol].value
+        except KeyError:
+            price = None
+        prices[platform_prices.platform] = price
+    return prices
 
 
 async def _fetch_platform_prices(fetchers: Iterable[PriceFetcher]) -> tuple[PlatformPrices, ...]:
@@ -55,12 +61,6 @@ async def get_one_price(fetchers: Iterable[PriceFetcher], symbol: str) -> Aggreg
         But we will fetch all prices and filter out anything else besides our symbol.
     """
     all_platforms = await _fetch_platform_prices(fetchers)
-    prices = {}
-    for platform_prices in all_platforms:
-        try:
-            price = platform_prices.prices[symbol].float_value
-        except KeyError:
-            price = None
-        prices[platform_prices.platform] = price
+    prices = _get_price_per_symbol(symbol, all_platforms)
 
     return AggregatedPrices(name=symbol, prices=prices)
