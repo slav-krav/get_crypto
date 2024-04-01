@@ -8,6 +8,19 @@ from models import AggregatedPrices, PlatformPrices, Symbol, Platform
 __all__ = ['get_all_prices', 'get_one_price']
 
 
+async def get_one_price(fetchers: Iterable[PriceFetcher], symbol: str) -> AggregatedPrices:
+    """Gets AggregatedPrices for a single symbol.
+
+    Note:
+        probably there are better ways to get data for a single price per platform.
+        But we will fetch all prices and filter out anything else besides our symbol.
+    """
+    all_platforms = await _fetch_platform_prices(fetchers)
+    prices = _get_price_per_symbol(symbol, all_platforms)
+
+    return AggregatedPrices(name=symbol, prices=prices)
+
+
 async def get_all_prices(fetchers: Iterable[PriceFetcher]) -> list[AggregatedPrices]:
     all_platforms = await _fetch_platform_prices(fetchers)
     return _group_by_symbol(all_platforms)
@@ -30,8 +43,10 @@ def _get_unique_symbols(platform_prices_seq: Iterable[PlatformPrices]) -> set[st
     return unique_symbols
 
 
-def _get_price_per_symbol(symbol: Symbol, platform_prices_seq: Iterable[PlatformPrices]) -> dict[
-    Platform, Optional[str]]:
+def _get_price_per_symbol(
+        symbol: Symbol,
+        platform_prices_seq: Iterable[PlatformPrices]
+) -> dict[Platform, Optional[str]]:
     prices = {}
     for platform_prices in platform_prices_seq:
         try:
@@ -52,15 +67,3 @@ async def _fetch_platform_prices(fetchers: Iterable[PriceFetcher]) -> tuple[Plat
         all_platforms = tuple(result for result in all_platforms if not isinstance(result, Exception))
     return all_platforms
 
-
-async def get_one_price(fetchers: Iterable[PriceFetcher], symbol: str) -> AggregatedPrices:
-    """Gets AggregatedPrices for a single symbol.
-
-    Note:
-        probably there are better ways to get data for a single price per platform.
-        But we will fetch all prices and filter out anything else besides our symbol.
-    """
-    all_platforms = await _fetch_platform_prices(fetchers)
-    prices = _get_price_per_symbol(symbol, all_platforms)
-
-    return AggregatedPrices(name=symbol, prices=prices)
