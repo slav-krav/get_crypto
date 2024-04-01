@@ -22,11 +22,11 @@ class BybitParser(AbstractParser):
                     all_prices[price.symbol] = price
             return PlatformPrices(prices=all_prices, platform=self.PLATFORM)
         except KeyError:
-            logging.error(f'{self.__class__.__name__} is unable to parse data. Wrong format? Raw data:\n{data}')
+            logging.error(f'Unable to parse data from {self.PLATFORM}. Wrong format? Raw data:\n{data}')
             return PlatformPrices.get_empty()
 
     def parse_price(self, item: dict) -> Price or None:
         try:
             return Price(symbol=item['symbol'], value=item['last_price'])
         except (KeyError, pydantic.ValidationError):
-            logging.error(f'Unable to construct Price for item {item}')
+            logging.error(f'[{self.PLATFORM}] | Unable to construct Price for item {item}')
