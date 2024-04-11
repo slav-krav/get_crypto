@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import fastapi
@@ -6,16 +7,15 @@ from data_gatherers.parsers.binance import BinanceParser
 from data_gatherers.parsers.bybit import BybitParser
 from data_gatherers.fetcher import PriceFetcher
 from data_gatherers.use_case import get_all_prices, get_one_price
+from db.session import get_connection, DBSettings
 from models import AggregatedPrices, Symbol
 
 logging.basicConfig(level=logging.DEBUG)
-
 
 FETCHERS = (
     PriceFetcher(url='https://api.binance.com/api/v3/ticker/price', parser=BinanceParser()),
     PriceFetcher('https://api.bybit.com/v2/public/tickers', parser=BybitParser()),
 )
-
 
 app = fastapi.FastAPI()
 
@@ -33,6 +33,24 @@ async def prices() -> list[AggregatedPrices]:
 @app.get("/api/prices/{coin_name}")
 async def one_symbol_prices(coin_name: Symbol) -> AggregatedPrices:
     return await get_one_price(fetchers=FETCHERS, symbol=coin_name)
+
+
+@app.get("/api/db")
+async def db() -> str:
+    mock_settings = DBSettings(
+        host='localhost',
+        port=5432,
+        user='postgres',
+        password='postgres',
+        dbname='image_scanning',
+    )
+
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute('SELECT NOW();')
+        res: datetime.datetime = cur.fetchone()[0]
+        logging.debug(res)
+        return res.strftime('%Y-%m-%d %H:%M:%S')
 
 
 if __name__ == '__main__':
