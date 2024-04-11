@@ -7,7 +7,7 @@ from data_gatherers.parsers.binance import BinanceParser
 from data_gatherers.parsers.bybit import BybitParser
 from data_gatherers.fetcher import PriceFetcher
 from data_gatherers.use_case import get_all_prices, get_one_price
-from db.session import get_connection, DBSettings
+from db.connection import get_connection, DBSettings
 from models import AggregatedPrices, Symbol
 
 logging.basicConfig(level=logging.DEBUG)
