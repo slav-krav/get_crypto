@@ -11,7 +11,7 @@ class DBSettings(pydantic_settings.BaseSettings):
     port: int
     user: str
     password: str
-    dbname: str
+    name: str
 
 
 def get_connection(db_settings: DBSettings = None) -> psycopg2.extensions.connection:
