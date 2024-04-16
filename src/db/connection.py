@@ -8,10 +8,10 @@ class DBSettings(pydantic_settings.BaseSettings):
     model_config = SettingsConfigDict(env_prefix='DB_')
 
     host: str
-    port: int
-    user: str
+    port: int = 5432
+    user: str = 'postgres'
     password: str
-    name: str
+    name: str = 'postgres'
 
 
 def get_connection(db_settings: DBSettings = None) -> psycopg2.extensions.connection:
@@ -22,6 +22,6 @@ def get_connection(db_settings: DBSettings = None) -> psycopg2.extensions.connec
         db_settings = DBSettings()
     return psycopg2.connect(host=db_settings.host,
                             port=db_settings.port,
-                            database=db_settings.dbname,
+                            database=db_settings.name,
                             user=db_settings.user,
                             password=db_settings.password)
